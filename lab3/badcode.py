@@ -43,7 +43,7 @@ def login_success():
     expression = input('Enter a mathematical formula to calculate: ')
 
     try:
-        result = ast.literal_eval(expression)
+        result = eval(expression)
         print("Result: ", result)
     except (SyntaxError, NameError, ZeroDivisionError):
         print("Invalid expression.")
