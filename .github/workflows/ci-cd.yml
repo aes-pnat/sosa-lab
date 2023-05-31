@@ -1,0 +1,39 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        
+      - name: Clone Repository
+        run: |
+          git clone https://github.com/username/repository.git
+          cp -r repository/* test/
+        
+      - name: Run Tests
+        run: |
+          cd test
+          python lab3/badcode_test.py
+        
+      - name: Run Bandit
+        run: |
+          cd test
+          bandit -r lab3/badcode.py
+        
+      - name: Copy to Production
+        run: cp -r test/* production/
+        
+      - name: Log Errors
+        run: |
+          mkdir logs
+          cd test
+          python lab3/badcode_test.py > ../logs/test_errors_$(date +%Y%m%d%H%M%S).txt
+          bandit -r lab3/badcode.py > ../logs/bandit_errors_$(date +%Y%m%d%H%M%S).txt
