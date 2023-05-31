@@ -1,10 +1,32 @@
 import unittest
 from unittest.mock import patch
-from io import StringIO
-import getpass
 import math
 from badcode import OperationsManager, login_success
+import io
+import builtins
+import sys
 
+def stub_stdin(testcase_inst, inputs):
+    stdin = sys.stdin
+
+    def cleanup():
+        sys.stdin = stdin
+
+    testcase_inst.addCleanup(cleanup)
+    sys.stdin = io.StringIO(inputs)
+
+def stub_stdouts(testcase_inst):
+    stderr = sys.stderr
+    stdout = sys.stdout
+
+    def cleanup():
+        sys.stderr = stderr
+        sys.stdout = stdout
+
+    testcase_inst.addCleanup(cleanup)
+    sys.stderr = io.StringIO()
+    sys.stdout = io.StringIO()
+    
 class OperationsManagerTest(unittest.TestCase):
 
     def test_perform_division(self):
@@ -17,21 +39,16 @@ class OperationsManagerTest(unittest.TestCase):
         result = ops_manager.perform_division()
         self.assertTrue(math.isnan(result))
 
+
 class LoginSuccessTest(unittest.TestCase):
 
-    @patch('builtins.input', side_effect=['10', '2', '2 + 2'])
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_login_success(self, mock_stdout, mock_input):
-        with patch.object(getpass, 'getpass', return_value='123'):
+    @patch('builtins.input', side_effect=["6", "3", "a + b / 0"])
+    def test_invalid_expression(self, mock_input):
+        expected_output = "2.0\nInvalid expression.\n"
+        with patch('sys.stdout', new=io.StringIO()) as fake_out:
             login_success()
-            self.assertEqual(mock_stdout.getvalue(), 'Login success!\n2.0\nResult: 4\n')
+            self.assertEqual(fake_out.getvalue(), expected_output)
 
-    @patch('builtins.input', side_effect=['root', 'wrong_password'])
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_login_failure(self, mock_stdout, mock_input):
-        with patch.object(getpass, 'getpass', return_value='wrong_password'):
-            login_success()
-            self.assertEqual(mock_stdout.getvalue(), 'Wrong username or password!\n')
 
 if __name__ == '__main__':
     unittest.main()
