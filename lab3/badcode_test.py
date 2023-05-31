@@ -42,7 +42,7 @@ class OperationsManagerTest(unittest.TestCase):
 
 class LoginSuccessTest(unittest.TestCase):
 
-    @patch('builtins.input', side_effect=["6", "3", "a + b / 0"])
+    @patch('builtins.input', side_effect=["6", "3", "1 / 0"])
     def test_invalid_expression(self, mock_input):
         expected_output = "2.0\nInvalid expression.\n"
         with patch('sys.stdout', new=io.StringIO()) as fake_out:
